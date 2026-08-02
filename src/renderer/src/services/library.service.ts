@@ -1,5 +1,15 @@
 import { nameColor } from './naming.service'
-import type { Bookmark, Library, Palette, PaletteSource, SavedColor, Swatch } from '../types'
+import type {
+  Bookmark,
+  Library,
+  Palette,
+  PaletteSource,
+  PosterConfig,
+  PosterSwatch,
+  SavedColor,
+  SavedPoster,
+  Swatch
+} from '../types'
 
 /**
  * Pure helpers over the favourites library. Every function returns a new
@@ -99,6 +109,51 @@ export function removeColor(library: Library, id: string): Library {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Saved poster configurations                                                 */
+/* -------------------------------------------------------------------------- */
+
+export function createSavedPoster(
+  name: string,
+  config: PosterConfig,
+  swatches: PosterSwatch[],
+  bookmarkId: string | null = null
+): SavedPoster {
+  const timestamp = now()
+  return {
+    id: newId(),
+    name: name.trim() || 'Untitled poster',
+    bookmarkId,
+    // Deep-cloned so later edits in the poster store cannot reach back and
+    // mutate what is meant to be a saved snapshot.
+    config: { ...config },
+    swatches: swatches.map((swatch) => ({ ...swatch })),
+    createdAt: timestamp,
+    updatedAt: timestamp
+  }
+}
+
+export function addPoster(library: Library, poster: SavedPoster): Library {
+  return { ...library, posters: [poster, ...library.posters] }
+}
+
+export function updatePoster(
+  library: Library,
+  id: string,
+  patch: Partial<Omit<SavedPoster, 'id' | 'createdAt'>>
+): Library {
+  return {
+    ...library,
+    posters: library.posters.map((poster) =>
+      poster.id === id ? { ...poster, ...patch, updatedAt: now() } : poster
+    )
+  }
+}
+
+export function removePoster(library: Library, id: string): Library {
+  return { ...library, posters: library.posters.filter((poster) => poster.id !== id) }
+}
+
+/* -------------------------------------------------------------------------- */
 
 export function addBookmark(library: Library, bookmark: Bookmark): Library {
   return { ...library, bookmarks: [...library.bookmarks, bookmark] }
@@ -135,6 +190,9 @@ export function removeBookmark(library: Library, id: string): Library {
     ),
     colors: library.colors.map((color) =>
       color.bookmarkId === id ? { ...color, bookmarkId: null } : color
+    ),
+    posters: library.posters.map((poster) =>
+      poster.bookmarkId === id ? { ...poster, bookmarkId: null } : poster
     )
   }
 }
@@ -179,6 +237,7 @@ export function mergeLibraries(current: Library, incoming: Library): Library {
   const knownBookmarks = new Set(current.bookmarks.map((bookmark) => bookmark.id))
   const knownPalettes = new Set(current.palettes.map((palette) => palette.id))
   const knownColors = new Set(current.colors.map((color) => color.id))
+  const knownPosters = new Set(current.posters.map((poster) => poster.id))
   return {
     ...current,
     bookmarks: [
@@ -192,6 +251,10 @@ export function mergeLibraries(current: Library, incoming: Library): Library {
     colors: [
       ...(incoming.colors ?? []).filter((color) => !knownColors.has(color.id)),
       ...current.colors
+    ],
+    posters: [
+      ...(incoming.posters ?? []).filter((poster) => !knownPosters.has(poster.id)),
+      ...current.posters
     ]
   }
 }

@@ -1,0 +1,121 @@
+.poster-library__search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 38px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-faint);
+  margin-bottom: var(--space-4);
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition);
+}
+
+.poster-library__search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  color: var(--accent);
+}
+
+.poster-library__search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  outline: none;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.poster-library__search input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.poster-library__groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-height: min(52vh, 480px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.poster-library__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.poster-library__heading-icon {
+  display: inline-flex;
+  color: var(--text-faint);
+}
+
+.poster-library__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.poster-library__palette,
+.poster-library__color {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 5px 10px 5px 5px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  max-width: 220px;
+  transition:
+    border-color var(--transition),
+    background var(--transition),
+    transform var(--transition);
+}
+
+.poster-library__palette:hover,
+.poster-library__color:hover {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+  transform: translateY(-1px);
+}
+
+.poster-library__strip {
+  flex: none;
+  display: flex;
+  width: 56px;
+  height: 26px;
+  border-radius: calc(var(--radius) - 4px);
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+}
+
+.poster-library__strip span {
+  flex: 1;
+  min-width: 0;
+}
+
+.poster-library__dot {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+}
+
+.poster-library__label {
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

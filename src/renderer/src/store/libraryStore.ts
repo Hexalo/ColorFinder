@@ -10,21 +10,34 @@ import {
   addBookmark,
   addColor,
   addPalette,
+  addPoster,
   createBookmark,
   createPalette,
   createSavedColor,
+  createSavedPoster,
   editBookmark,
   mergeLibraries,
   movePalette,
   removeBookmark,
   removeColor,
   removePalette,
+  removePoster,
   toSwatches,
   updateColor,
-  updatePalette
+  updatePalette,
+  updatePoster
 } from '../services/library.service'
 import { nameColor } from '../services/naming.service'
-import type { Bookmark, Library, Palette, PaletteSource, SavedColor } from '../types'
+import type {
+  Bookmark,
+  Library,
+  Palette,
+  PaletteSource,
+  PosterConfig,
+  PosterSwatch,
+  SavedColor,
+  SavedPoster
+} from '../types'
 import { toast } from './toastStore'
 
 /**
@@ -79,6 +92,20 @@ interface LibraryState {
   renameColor(id: string, name: string): void
   deleteColor(id: string): void
   assignColorBookmark(colorId: string, bookmarkId: string | null): void
+
+  savePoster(
+    name: string,
+    config: PosterConfig,
+    swatches: PosterSwatch[],
+    bookmarkId?: string | null
+  ): SavedPoster
+  updatePosterEntry(
+    id: string,
+    patch: { name: string; bookmarkId: string | null; config: PosterConfig; swatches: PosterSwatch[] }
+  ): void
+  renamePoster(id: string, name: string): void
+  deletePoster(id: string): void
+  assignPosterBookmark(posterId: string, bookmarkId: string | null): void
 
   createFolder(name: string, hex: string, icon?: string): void
   editFolder(id: string, patch: Partial<Pick<Bookmark, 'name' | 'hex' | 'icon'>>): void
@@ -156,6 +183,35 @@ export const useLibraryStore = create<LibraryState>((set, get) => {
 
     assignColorBookmark: (colorId, bookmarkId) => {
       commit((library) => updateColor(library, colorId, { bookmarkId }))
+    },
+
+    savePoster: (name, config, swatches, bookmarkId) => {
+      const poster = createSavedPoster(name, config, swatches, bookmarkId ?? asBookmarkId(get().filter))
+      commit((library) => addPoster(library, poster))
+      return poster
+    },
+
+    updatePosterEntry: (id, patch) => {
+      commit((library) =>
+        updatePoster(library, id, {
+          name: patch.name.trim() || 'Untitled poster',
+          bookmarkId: patch.bookmarkId,
+          config: patch.config,
+          swatches: patch.swatches
+        })
+      )
+    },
+
+    renamePoster: (id, name) => {
+      commit((library) => updatePoster(library, id, { name: name.trim() || 'Untitled poster' }))
+    },
+
+    deletePoster: (id) => {
+      commit((library) => removePoster(library, id))
+    },
+
+    assignPosterBookmark: (posterId, bookmarkId) => {
+      commit((library) => updatePoster(library, posterId, { bookmarkId }))
     },
 
     createFolder: (name, hex, icon) => {

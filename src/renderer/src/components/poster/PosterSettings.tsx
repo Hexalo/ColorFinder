@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import {
   ArtboardIcon,
+  Bookmark02Icon,
   ColorsIcon,
   ImageAdd01Icon,
   Layout01Icon,
@@ -37,6 +38,7 @@ import type {
   PosterTextPosition,
   PosterTextTone
 } from '../../types'
+import { PosterSavedConfigs } from './PosterSavedConfigs'
 import { PosterSwatches } from './PosterSwatches'
 import './PosterPanel.css'
 
@@ -95,7 +97,18 @@ export function PosterSettings({
   const chooseImage = async (): Promise<void> => {
     try {
       const dataUrl = await window.api.files.openImage()
-      if (dataUrl) store.update({ image: dataUrl, background: 'image' })
+      if (dataUrl) {
+        store.update({
+          image: dataUrl,
+          background: 'image',
+          // A first picture defaults to a light veil so text stays legible;
+          // once the user has an opinion of their own, leave it alone.
+          backgroundDim: config.backgroundDim || 0.25,
+          imageScale: 1,
+          imageOffsetX: 0,
+          imageOffsetY: 0
+        })
+      }
     } catch (error) {
       console.error('[poster] could not open the picture', error)
       toast.error('That picture could not be opened.')
@@ -132,6 +145,10 @@ export function PosterSettings({
 
         <Disclosure title="Colours" icon={<ColorsIcon size={16} />} defaultOpen>
           <PosterSwatches source={source} onSource={onSource} />
+        </Disclosure>
+
+        <Disclosure title="Saved configurations" icon={<Bookmark02Icon size={16} />}>
+          <PosterSavedConfigs />
         </Disclosure>
 
         <Disclosure title="Page" icon={<ArtboardIcon size={16} />} defaultOpen>
@@ -345,14 +362,6 @@ export function PosterSettings({
                 </Group>
 
                 <Range
-                  label="Dim"
-                  min={0}
-                  max={90}
-                  suffix="%"
-                  value={Math.round(config.imageDim * 100)}
-                  onChange={(value) => store.update({ imageDim: value / 100 })}
-                />
-                <Range
                   label="Blur"
                   min={0}
                   max={6}
@@ -361,8 +370,58 @@ export function PosterSettings({
                   value={config.imageBlur}
                   onChange={(imageBlur) => store.update({ imageBlur })}
                 />
+
+                <Group
+                  label="Position and zoom"
+                  hint="Or drag the picture directly in the preview."
+                >
+                  <Range
+                    label="Zoom"
+                    min={100}
+                    max={300}
+                    suffix="%"
+                    value={Math.round(config.imageScale * 100)}
+                    onChange={(value) => store.update({ imageScale: value / 100 })}
+                  />
+                  <div className="poster-panel__pair">
+                    <Range
+                      label="Position X"
+                      min={-60}
+                      max={60}
+                      suffix="%"
+                      value={Math.round(config.imageOffsetX)}
+                      onChange={(imageOffsetX) => store.update({ imageOffsetX })}
+                    />
+                    <Range
+                      label="Position Y"
+                      min={-60}
+                      max={60}
+                      suffix="%"
+                      value={Math.round(config.imageOffsetY)}
+                      onChange={(imageOffsetY) => store.update({ imageOffsetY })}
+                    />
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() =>
+                      store.update({ imageScale: 1, imageOffsetX: 0, imageOffsetY: 0 })
+                    }
+                  >
+                    Reset position and zoom
+                  </Button>
+                </Group>
               </>
             ) : null}
+
+            <Range
+              label="Dim"
+              min={0}
+              max={90}
+              suffix="%"
+              value={Math.round(config.backgroundDim * 100)}
+              onChange={(value) => store.update({ backgroundDim: value / 100 })}
+            />
           </div>
         </Disclosure>
 

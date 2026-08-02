@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { drawPoster } from '../../services/poster.service'
 import type { PosterScene } from '../../services/poster.service'
+import { usePosterStore } from '../../store/posterStore'
 import './PosterCanvas.css'
 
 interface PosterCanvasProps {
@@ -11,6 +12,18 @@ interface PosterCanvasProps {
 
 /** Never allocate a backing store larger than this on either side. */
 const MAX_BACKING = 3000
+/** How far the picture can be panned, in % of the page's own width/height. */
+const PAN_LIMIT = 60
+
+const clampPan = (value: number): number => Math.min(Math.max(value, -PAN_LIMIT), PAN_LIMIT)
+
+interface PanState {
+  pointerId: number
+  startX: number
+  startY: number
+  baseX: number
+  baseY: number
+}
 
 /**
  * The live preview.
@@ -25,6 +38,9 @@ export function PosterCanvas({ scene, onScale }: PosterCanvasProps): React.JSX.E
   const [box, setBox] = useState({ width: 0, height: 0 })
   /** Canvas text falls back to a system face until the app fonts are in. */
   const [fontsReady, setFontsReady] = useState(false)
+  const [panning, setPanning] = useState(false)
+  const pan = useRef<PanState | null>(null)
+  const updateConfig = usePosterStore((state) => state.update)
 
   useEffect(() => {
     let cancelled = false
@@ -84,12 +100,57 @@ export function PosterCanvas({ scene, onScale }: PosterCanvasProps): React.JSX.E
     // again once the bundled faces have loaded.
   }, [scene, scale, config.width, config.height, fontsReady])
 
+  /**
+   * Dragging the picture directly is the fast path for framing a background
+   * photo; the sliders in the panel are the precise one. Both write to the
+   * same `imageOffsetX/Y`, so they can never disagree.
+   */
+  const canPan = config.background === 'image' && scene.image !== null
+
+  const onPointerDown = (event: React.PointerEvent<HTMLCanvasElement>): void => {
+    if (!canPan || scale <= 0) return
+    event.preventDefault()
+    event.currentTarget.setPointerCapture(event.pointerId)
+    pan.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      baseX: config.imageOffsetX,
+      baseY: config.imageOffsetY
+    }
+    setPanning(true)
+  }
+
+  const onPointerMove = (event: React.PointerEvent<HTMLCanvasElement>): void => {
+    const drag = pan.current
+    if (!drag || drag.pointerId !== event.pointerId || scale <= 0) return
+    const dxPercent = (((event.clientX - drag.startX) / scale) / config.width) * 100
+    const dyPercent = (((event.clientY - drag.startY) / scale) / config.height) * 100
+    updateConfig({
+      imageOffsetX: clampPan(drag.baseX + dxPercent),
+      imageOffsetY: clampPan(drag.baseY + dyPercent)
+    })
+  }
+
+  const endPan = (event: React.PointerEvent<HTMLCanvasElement>): void => {
+    if (pan.current?.pointerId !== event.pointerId) return
+    pan.current = null
+    setPanning(false)
+  }
+
   return (
     <div className="poster-canvas" ref={frame}>
       {scene.swatches.length === 0 ? (
         <p className="poster-canvas__empty">Choose some colours to compose a poster.</p>
       ) : (
-        <canvas className="poster-canvas__surface" ref={canvas} />
+        <canvas
+          className={`poster-canvas__surface ${canPan ? 'is-pannable' : ''} ${panning ? 'is-panning' : ''}`}
+          ref={canvas}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={endPan}
+          onPointerCancel={endPan}
+        />
       )}
     </div>
   )

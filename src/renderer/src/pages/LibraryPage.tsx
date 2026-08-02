@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import {
   Add01Icon,
+  ArtboardIcon,
   Cancel01Icon,
   Copy01Icon,
   Delete01Icon,
@@ -28,8 +29,9 @@ import { nameColor, searchTokens } from '../services/naming.service'
 import { useColorStore } from '../store/colorStore'
 import { openCopyPanel } from '../store/copyPanelStore'
 import { RECENT_FILTER, useLibraryStore } from '../store/libraryStore'
+import { usePosterStore } from '../store/posterStore'
 import { useRouteStore } from '../store/routeStore'
-import type { Bookmark, Palette, SavedColor } from '../types'
+import type { Bookmark, Palette, SavedColor, SavedPoster } from '../types'
 import './LibraryPage.css'
 
 /** How many of the newest items the virtual "Recent" view keeps. */
@@ -49,6 +51,7 @@ export function LibraryPage(): React.JSX.Element {
   const [folderDialog, setFolderDialog] = useState<{ bookmark: Bookmark | null } | null>(null)
   const [editing, setEditing] = useState<Palette | null>(null)
   const [editingColor, setEditingColor] = useState<SavedColor | null>(null)
+  const [editingPoster, setEditingPoster] = useState<SavedPoster | null>(null)
   const [editingName, setEditingName] = useState('')
   /** Palette currently open in the full editor. */
   const [openPalette, setOpenPalette] = useState<string | null>(null)
@@ -66,6 +69,11 @@ export function LibraryPage(): React.JSX.Element {
 
   const matchesColor = (color: SavedColor): boolean =>
     !needle || color.name.toLowerCase().includes(needle) || searchTokens(color.hex).includes(needle)
+
+  const matchesPoster = (poster: SavedPoster): boolean =>
+    !needle ||
+    poster.name.toLowerCase().includes(needle) ||
+    poster.swatches.some((swatch) => searchTokens(swatch.hex).includes(needle))
 
   const inFilter = (bookmarkId: string | null): boolean =>
     filter === null || filter === RECENT_FILTER || bookmarkId === filter
@@ -89,6 +97,16 @@ export function LibraryPage(): React.JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [library.colors, filter, needle])
 
+  const posters = useMemo(() => {
+    const found = library.posters.filter(
+      (poster) => inFilter(poster.bookmarkId) && matchesPoster(poster)
+    )
+    return filter === RECENT_FILTER
+      ? newestFirst(found).slice(0, RECENT_LIMIT)
+      : newestFirst(found)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [library.posters, filter, needle])
+
   /** Library reordered newest-first, so the Recent tile previews recent work. */
   const recentLibrary = useMemo(
     () => ({
@@ -106,8 +124,15 @@ export function LibraryPage(): React.JSX.Element {
   const saveRename = (): void => {
     if (editing) store.renamePalette(editing.id, editingName)
     if (editingColor) store.renameColor(editingColor.id, editingName)
+    if (editingPoster) store.renamePoster(editingPoster.id, editingName)
     setEditing(null)
     setEditingColor(null)
+    setEditingPoster(null)
+  }
+
+  const openPoster = (poster: SavedPoster): void => {
+    usePosterStore.getState().loadPreset(poster)
+    navigate('poster')
   }
 
   const bookmarkOptions = [
@@ -275,6 +300,69 @@ export function LibraryPage(): React.JSX.Element {
         </Section>
       ) : null}
 
+      {posters.length > 0 ? (
+        <Section title="Poster configurations" hint={`${posters.length} saved`}>
+          <ul className="library__colors">
+            {posters.map((poster) => (
+              <li key={poster.id} className="poster-card card">
+                <div className="poster-card__preview">
+                  {poster.swatches.slice(0, 8).map((swatch, index) => (
+                    <span key={index} style={{ background: swatch.hex }} />
+                  ))}
+                </div>
+                <div className="poster-card__meta">
+                  <div className="poster-card__meta-text">
+                    <p className="poster-card__name">{poster.name}</p>
+                    <p className="poster-card__sub">
+                      {poster.swatches.length} colours ·{' '}
+                      {new Date(poster.updatedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="poster-card__tools">
+                    <IconButton
+                      label={`Rename "${poster.name}"`}
+                      size="sm"
+                      onClick={() => {
+                        setEditingPoster(poster)
+                        setEditingName(poster.name)
+                      }}
+                    >
+                      <Edit02Icon size={14} />
+                    </IconButton>
+                    <IconButton
+                      label={`Delete "${poster.name}"`}
+                      size="sm"
+                      variant="danger"
+                      onClick={() => store.deletePoster(poster.id)}
+                    >
+                      <Delete01Icon size={14} />
+                    </IconButton>
+                  </div>
+                </div>
+                <div className="poster-card__foot">
+                  <Select
+                    aria-label="Move to bookmark"
+                    value={poster.bookmarkId ?? ''}
+                    onChange={(event) =>
+                      store.assignPosterBookmark(poster.id, event.target.value || null)
+                    }
+                    options={bookmarkOptions}
+                  />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    icon={<ArtboardIcon size={14} />}
+                    onClick={() => openPoster(poster)}
+                  >
+                    Open
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
       <Section
         title="Palettes"
         hint={
@@ -428,11 +516,12 @@ export function LibraryPage(): React.JSX.Element {
       />
 
       <Modal
-        open={editing !== null || editingColor !== null}
-        title={editingColor ? 'Rename colour' : 'Rename palette'}
+        open={editing !== null || editingColor !== null || editingPoster !== null}
+        title={editingColor ? 'Rename colour' : editingPoster ? 'Rename poster configuration' : 'Rename palette'}
         onClose={() => {
           setEditing(null)
           setEditingColor(null)
+          setEditingPoster(null)
         }}
         footer={
           <>
@@ -441,6 +530,7 @@ export function LibraryPage(): React.JSX.Element {
               onClick={() => {
                 setEditing(null)
                 setEditingColor(null)
+                setEditingPoster(null)
               }}
             >
               Cancel

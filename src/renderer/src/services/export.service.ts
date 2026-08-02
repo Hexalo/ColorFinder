@@ -51,7 +51,9 @@ export function libraryDocument(library: Library): Record<string, unknown> {
     version: EXPORT_VERSION,
     exportedAt: new Date().toISOString(),
     bookmarks: library.bookmarks,
-    palettes: library.palettes
+    palettes: library.palettes,
+    colors: library.colors,
+    posters: library.posters
   }
 }
 
@@ -70,7 +72,11 @@ export function parseLibraryDocument(raw: unknown): Library | null {
   return {
     ...createEmptyLibrary(),
     bookmarks: bookmarks as Library['bookmarks'],
-    palettes: palettes as Library['palettes']
+    palettes: palettes as Library['palettes'],
+    // Older exports predate standalone colours and saved posters — both are
+    // optional here so those files still import instead of being rejected.
+    colors: Array.isArray(value.colors) ? (value.colors as Library['colors']) : [],
+    posters: Array.isArray(value.posters) ? (value.posters as Library['posters']) : []
   }
 }
 

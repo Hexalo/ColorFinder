@@ -10,6 +10,7 @@ export type {
   PosterRatio,
   PosterSwatch,
   PosterTemplate,
+  SavedPoster,
   PosterTextAlign,
   PosterTextPosition,
   PosterTextTone

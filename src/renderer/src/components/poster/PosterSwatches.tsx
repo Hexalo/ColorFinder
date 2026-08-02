@@ -1,22 +1,25 @@
-import { useMemo } from 'react'
-import { Delete02Icon, Refresh01Icon } from 'hugeicons-react'
-import { IconButton } from '../ui/Button'
-import { Field, Select, TextInput } from '../ui/Field'
+import { useState } from 'react'
+import { Delete02Icon, Refresh01Icon, Search01Icon } from 'hugeicons-react'
+import { Button, IconButton } from '../ui/Button'
+import { Select, TextInput } from '../ui/Field'
 import { NO_ICON, POSTER_ICONS } from '../../data/posterIcons'
-import { nameColor } from '../../services/naming.service'
 import { swatchHexes } from '../../services/library.service'
+import { nameColor } from '../../services/naming.service'
 import { useColorStore } from '../../store/colorStore'
 import { useGeneratedStore } from '../../store/generatedStore'
 import { useLibraryStore } from '../../store/libraryStore'
 import { usePosterStore } from '../../store/posterStore'
 import type { Library } from '../../types'
+import { PosterLibraryModal } from './PosterLibraryModal'
 
 /**
  * Where the poster's colours come from, and what each band says.
  *
  * The source is a single list rather than a mode switch: "the palette I just
  * made", "the colour I am holding" and everything in the library are the same
- * kind of answer to the same question.
+ * kind of answer to the same question. Picking a library item opens a visual
+ * browser rather than a name in a dropdown — a palette shows as its own
+ * swatch strip, grouped the way the Library page groups it.
  */
 
 export const LATEST_SOURCE = 'latest'
@@ -27,6 +30,14 @@ interface PosterSwatchesProps {
   onSource(source: string): void
 }
 
+/** Label for whichever library item is currently the active source. */
+function activeLibraryLabel(source: string, library: Library): string | null {
+  const [kind, id] = source.split(':')
+  if (kind === 'palette') return library.palettes.find((item) => item.id === id)?.name ?? null
+  if (kind === 'color') return library.colors.find((item) => item.id === id)?.name ?? null
+  return null
+}
+
 export function PosterSwatches({ source, onSource }: PosterSwatchesProps): React.JSX.Element {
   const library = useLibraryStore((state) => state.library)
   const generated = useGeneratedStore()
@@ -35,49 +46,72 @@ export function PosterSwatches({ source, onSource }: PosterSwatchesProps): React
   const swatches = usePosterStore((state) => state.swatches)
   const store = usePosterStore()
 
-  const options = useMemo(
-    () => [
-      {
-        value: LATEST_SOURCE,
-        label: generated.colors.length
-          ? `Latest palette · ${generated.name}`
-          : 'Latest palette · nothing generated yet'
-      },
-      { value: CURRENT_SOURCE, label: `Current colour · ${nameColor(hex)}` },
-      ...library.palettes.map((palette) => ({
-        value: `palette:${palette.id}`,
-        label: `Library · ${palette.name}`
-      })),
-      ...library.colors.map((color) => ({
-        value: `color:${color.id}`,
-        label: `Library colour · ${color.name}`
-      }))
-    ],
-    [generated.colors.length, generated.name, hex, library.palettes, library.colors]
-  )
+  const [browsing, setBrowsing] = useState(false)
 
   const iconOptions = [
     { value: NO_ICON, label: 'No glyph' },
     ...POSTER_ICONS.map((icon) => ({ value: icon.id, label: icon.label }))
   ]
 
+  const libraryLabel = activeLibraryLabel(source, library)
+
   return (
     <div className="poster-panel__stack">
-      <Field label="Colours from">
-        {(id) => (
-          <div className="poster-panel__row">
-            <Select
-              id={id}
-              options={options}
-              value={source}
-              onChange={(event) => onSource(event.target.value)}
-            />
-            <IconButton label="Reload this source" onClick={() => onSource(source)}>
-              <Refresh01Icon size={16} />
+      <div className="field">
+        <span className="field__label">Colours from</span>
+
+        <div className="poster-source">
+          <button
+            type="button"
+            className={`poster-source__pill ${source === LATEST_SOURCE ? 'is-active' : ''}`}
+            onClick={() => onSource(LATEST_SOURCE)}
+          >
+            <span className="poster-source__strip">
+              {(generated.colors.length ? generated.colors : ['transparent'])
+                .slice(0, 5)
+                .map((swatchHex, index) => (
+                  <span key={index} style={{ background: swatchHex }} />
+                ))}
+            </span>
+            <span className="poster-source__text">
+              Latest palette
+              <span className="poster-source__hint">
+                {generated.colors.length ? generated.name : 'Nothing generated yet'}
+              </span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className={`poster-source__pill ${source === CURRENT_SOURCE ? 'is-active' : ''}`}
+            onClick={() => onSource(CURRENT_SOURCE)}
+          >
+            <span className="poster-source__dot" style={{ background: hex }} />
+            <span className="poster-source__text">
+              Current colour
+              <span className="poster-source__hint">{nameColor(hex)}</span>
+            </span>
+          </button>
+        </div>
+
+        <div className="poster-panel__row">
+          <Button
+            size="sm"
+            variant={libraryLabel ? 'primary' : 'secondary'}
+            icon={<Search01Icon size={14} />}
+            onClick={() => setBrowsing(true)}
+          >
+            {libraryLabel ? `Library · ${libraryLabel}` : 'Browse library…'}
+          </Button>
+          {libraryLabel ? (
+            <IconButton label="Refresh this source" size="sm" onClick={() => onSource(source)}>
+              <Refresh01Icon size={15} />
             </IconButton>
-          </div>
-        )}
-      </Field>
+          ) : null}
+        </div>
+      </div>
+
+      <PosterLibraryModal open={browsing} onClose={() => setBrowsing(false)} onPick={onSource} />
 
       <ul className="poster-swatches">
         {swatches.map((swatch, index) => (

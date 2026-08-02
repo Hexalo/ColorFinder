@@ -115,7 +115,14 @@ export function PosterPage(): React.JSX.Element {
       toast.error('That file is not an image.')
       return
     }
-    store.update({ image: await fileToDataUrl(file), background: 'image' })
+    store.update({
+      image: await fileToDataUrl(file),
+      background: 'image',
+      backgroundDim: config.backgroundDim || 0.25,
+      imageScale: 1,
+      imageOffsetX: 0,
+      imageOffsetY: 0
+    })
   }
 
   const exportPoster = async (): Promise<void> => {

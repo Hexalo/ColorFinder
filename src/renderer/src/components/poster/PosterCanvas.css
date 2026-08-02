@@ -28,6 +28,15 @@
   display: block;
   box-shadow: var(--shadow-lg);
   border-radius: 2px;
+  touch-action: none;
+}
+
+.poster-canvas__surface.is-pannable {
+  cursor: grab;
+}
+
+.poster-canvas__surface.is-panning {
+  cursor: grabbing;
 }
 
 .poster-canvas__empty {

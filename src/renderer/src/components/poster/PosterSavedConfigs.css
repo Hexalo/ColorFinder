@@ -1,0 +1,45 @@
+.poster-configs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.poster-configs__item {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1);
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+}
+
+.poster-configs__item.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.poster-configs__preview {
+  display: flex;
+  width: 48px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+}
+
+.poster-configs__preview span {
+  flex: 1;
+  min-width: 0;
+}
+
+.poster-configs__name {
+  min-width: 0;
+  text-align: left;
+  font-size: 12.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

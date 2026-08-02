@@ -6,7 +6,15 @@ import {
   RATIO_BY_ID
 } from '../data/posterPresets'
 import { NO_ICON, posterIconShape } from '../data/posterIcons'
-import { clamp, contrastRatio, readableTextOn } from './color.service'
+import {
+  clamp,
+  contrastRatio,
+  lightnessOf,
+  mix,
+  okhslOf,
+  okhslToHex,
+  readableTextOn
+} from './color.service'
 import type { ImageFormat, PosterAlign, PosterConfig, PosterSwatch } from '../types'
 
 /**
@@ -88,13 +96,21 @@ export function withLongEdge(config: PosterConfig, value: number): PosterConfig 
 /* Colour helpers                                                              */
 /* -------------------------------------------------------------------------- */
 
+/** How dark or light a tint has to sit before it counts as "readable enough". */
+const READABLE_CONTRAST = 4.5
+
 /**
  * The colour the text takes on a band.
  *
  * `palette` is the interesting one: instead of the usual black-or-white it
- * borrows the most readable colour from the palette itself, which is what
- * gives printed colour cards their coherence — the label on the orange band is
- * the palette's own brown, not a generic dark grey.
+ * borrows a colour from the palette itself, which is what gives printed
+ * colour cards their coherence — the label on the orange band is the
+ * palette's own brown, not a generic dark grey.
+ *
+ * Every band's own colour is a candidate too (not just the *other* swatches),
+ * so a two-colour palette still has real variety to draw from rather than
+ * amounting to "pick whichever of these two colours contrasts more" — nearly
+ * always the same one twice.
  */
 export function textToneFor(hex: string, config: PosterConfig, palette: string[]): string {
   if (config.textTone === 'custom') return config.textColor
@@ -105,19 +121,35 @@ export function textToneFor(hex: string, config: PosterConfig, palette: string[]
     const contrast = contrastRatio(hex, candidate)
     if (!best || contrast > best.contrast) best = { hex: candidate, contrast }
   }
-  // Under about 3:1 the label stops being readable at small sizes; a
-  // monochrome palette has no useful partner, so fall back to black or white.
-  return best && best.contrast >= 3 ? best.hex : readableTextOn(hex)
+  if (!best) return readableTextOn(hex)
+  if (best.contrast >= READABLE_CONTRAST) return best.hex
+
+  // The closest palette hue is not readable enough as-is. Keep its hue and
+  // chroma, but push its lightness toward whichever extreme reads against
+  // *this* band, so the label still comes from the palette instead of
+  // collapsing to a flat black or white every time contrast runs short.
+  const tone = okhslOf(best.hex)
+  const extreme = lightnessOf(hex) > 0.5 ? 0.06 : 0.94
+  const tinted = okhslToHex({ ...tone, lightness: extreme })
+  return contrastRatio(hex, tinted) > best.contrast ? tinted : best.hex
 }
 
 /**
  * Readable colour for the title, which sits on the page rather than on a band.
- * A picture has no single colour to measure against, so it gets white.
+ * A picture has no single colour to measure against, so it gets white. Solid
+ * and palette backgrounds fold the dim veil into the comparison, since a
+ * heavily dimmed page needs lighter text than its raw colour would suggest.
  */
-function pageToneFor(config: PosterConfig): string {
+function pageToneFor(config: PosterConfig, swatches: PosterSwatch[]): string {
   if (config.textTone === 'custom') return config.textColor
   if (config.background === 'image' && config.image) return '#ffffff'
-  return readableTextOn(config.backgroundColor)
+
+  const base =
+    config.background === 'gradient' && swatches.length > 0
+      ? swatches[Math.floor((swatches.length - 1) / 2)].hex
+      : config.backgroundColor
+  const dimmed = config.backgroundDim > 0 ? mix(base, '#000000', config.backgroundDim) : base
+  return readableTextOn(dimmed)
 }
 
 /* -------------------------------------------------------------------------- */
@@ -223,6 +255,12 @@ function titleBand(config: PosterConfig, unit: number): number {
 /* Drawing                                                                     */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Fills the page: the base colour, then whichever of the three background
+ * modes is active, then the dim veil — which applies to all three alike, not
+ * only to a picture, since a solid or a gradient can want darkening for
+ * contrast too.
+ */
 function fillPage(ctx: CanvasRenderingContext2D, scene: PosterScene, unit: number): void {
   const { config, swatches, image } = scene
 
@@ -237,27 +275,25 @@ function fillPage(ctx: CanvasRenderingContext2D, scene: PosterScene, unit: numbe
     })
     ctx.fillStyle = gradient
     ctx.fillRect(0, 0, config.width, config.height)
-    return
+  } else if (config.background === 'image' && image) {
+    const blur = config.imageBlur * unit
+    const frame = imageRect(config, image, blur)
+
+    ctx.save()
+    // Blur samples transparent pixels past the edges, so the picture is drawn
+    // a little larger than the page to keep the halo out of frame.
+    if (blur > 0) ctx.filter = `blur(${blur.toFixed(2)}px)`
+    ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h)
+    ctx.restore()
   }
 
-  if (config.background !== 'image' || !image) return
-
-  const blur = config.imageBlur * unit
-  const frame = imageRect(config, image, blur)
-
-  ctx.save()
-  // Blur samples transparent pixels past the edges, so the picture is drawn a
-  // little larger than the page to keep the halo out of frame.
-  if (blur > 0) ctx.filter = `blur(${blur.toFixed(2)}px)`
-  ctx.drawImage(image, frame.x, frame.y, frame.w, frame.h)
-  ctx.restore()
-
-  if (config.imageDim > 0) {
-    ctx.fillStyle = `rgba(0, 0, 0, ${config.imageDim})`
+  if (config.backgroundDim > 0) {
+    ctx.fillStyle = `rgba(0, 0, 0, ${config.backgroundDim})`
     ctx.fillRect(0, 0, config.width, config.height)
   }
 }
 
+/** Where the picture lands, honouring fit, the user's pan and their zoom. */
 function imageRect(config: PosterConfig, image: HTMLImageElement, bleed: number): Rect {
   const box = {
     x: -bleed * 2,
@@ -265,16 +301,34 @@ function imageRect(config: PosterConfig, image: HTMLImageElement, bleed: number)
     w: config.width + bleed * 4,
     h: config.height + bleed * 4
   }
-  if (config.imageFit === 'stretch') return box
 
-  const source = image.naturalWidth / image.naturalHeight
-  const target = box.w / box.h
-  const cover = config.imageFit === 'cover'
-  const wide = cover ? source > target : source < target
+  let w: number
+  let h: number
+  if (config.imageFit === 'stretch') {
+    w = box.w
+    h = box.h
+  } else {
+    const source = image.naturalWidth / image.naturalHeight
+    const target = box.w / box.h
+    const cover = config.imageFit === 'cover'
+    const wide = cover ? source > target : source < target
+    w = wide ? box.h * source : box.w
+    h = wide ? box.h : box.w / source
+  }
 
-  const w = wide ? box.h * source : box.w
-  const h = wide ? box.h : box.w / source
-  return { x: box.x + (box.w - w) / 2, y: box.y + (box.h - h) / 2, w, h }
+  const scale = Math.max(config.imageScale, 0.1)
+  w *= scale
+  h *= scale
+
+  const offsetX = (config.imageOffsetX / 100) * config.width
+  const offsetY = (config.imageOffsetY / 100) * config.height
+
+  return {
+    x: box.x + (box.w - w) / 2 + offsetX,
+    y: box.y + (box.h - h) / 2 + offsetY,
+    w,
+    h
+  }
 }
 
 function pathBand(ctx: CanvasRenderingContext2D, rect: Rect, radius: number): void {
@@ -498,7 +552,12 @@ function drawBand(
   ctx.restore()
 }
 
-function drawTitle(ctx: CanvasRenderingContext2D, config: PosterConfig, unit: number): void {
+function drawTitle(
+  ctx: CanvasRenderingContext2D,
+  config: PosterConfig,
+  swatches: PosterSwatch[],
+  unit: number
+): void {
   if (!config.showTitle || !config.title.trim()) return
 
   const family = FONT_BY_ID[config.fontId]?.stack ?? FONT_BY_ID.system.stack
@@ -510,7 +569,7 @@ function drawTitle(ctx: CanvasRenderingContext2D, config: PosterConfig, unit: nu
   ctx.textBaseline = 'top'
   ctx.textAlign = config.textAlign
   ctx.font = fontString(600, size, family)
-  ctx.fillStyle = pageToneFor(config)
+  ctx.fillStyle = pageToneFor(config, swatches)
   ctx.fillText(config.title, anchorFor(config.textAlign, box), pad + config.titleSize * unit * 0.25)
 }
 
@@ -525,7 +584,7 @@ export function drawPoster(ctx: CanvasRenderingContext2D, scene: PosterScene): v
   ctx.save()
   ctx.clearRect(0, 0, config.width, config.height)
   fillPage(ctx, scene, unit)
-  drawTitle(ctx, config, unit)
+  drawTitle(ctx, config, swatches, unit)
 
   const palette = swatches.map((swatch) => swatch.hex)
   const rects = bandRects(config, swatches.length)

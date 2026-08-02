@@ -171,26 +171,47 @@ What can be set: the ratio (portrait, square, landscape, A4, or free) and the re
 stacked bands or side-by-side columns; gap, margin, corner radius, opacity and band width,
 with the narrow bands sitting flush, centred or in a **cascade**; the typeface, weight,
 sizes, tracking, alignment and position of the text; which values are printed (HEX, RGB,
-HSL, CMYK, OKLCH, index) and whether they sit in columns, stacked or inline; a solid,
-palette-gradient or **picture** background, dimmed and blurred to taste; and a glyph per
-band, chosen from a set drawn as plain path data so the same string feeds the canvas and
-the picker.
+HSL, CMYK, OKLCH, index) and whether they sit in columns, stacked or inline; and a glyph
+per band, chosen from a set drawn as plain path data so the same string feeds the canvas
+and the picker.
+
+**Background** is solid, a palette gradient, or a picture — and a black veil (**Dim**)
+sits over whichever one is active, not just a picture, so a bright gradient or a pale
+solid can be knocked back for contrast too. A picture also gets its own **fit, blur, zoom
+and pan**: drag it straight on the preview to reframe it — the same `imageOffsetX/Y` the
+Position sliders drive — or dial it in with the sliders when you want a precise number.
+"Reset position and zoom" clears both in one click. Panning and zoom are the one part of a
+picture that a template never touches, since they belong to *your* photo, not to the look.
 
 Text colour has three modes, and the interesting one is **Palette**: instead of the usual
-black-or-white it borrows the most readable colour *from the palette itself*, which is
-what gives printed colour cards their coherence — the caption on the orange band is the
-palette's own brown, not a generic grey. It falls back to black or white when no palette
-colour clears about 3:1.
+black-or-white it borrows a colour *from the palette itself* — every band is a candidate,
+not just the others — which is what gives printed colour cards their coherence, the
+caption on the orange band being the palette's own brown rather than a generic grey. When
+even the closest palette hue cannot clear a readable contrast on its own, its hue and
+chroma are kept and only its lightness is pushed toward black or white, so a band's label
+still reads as *drawn from this palette* instead of collapsing to flat black or white.
 
 Colours come from a single list rather than a mode switch: the palette you last had on
-screen, the colour you are holding, or anything in the library. "Latest palette" keeps
-following along — generate a new one on any page and the poster updates, because every
-palette screen publishes through the same `PaletteBoard`. Names are editable per band, and
-a picture can be dropped straight onto the preview instead of going through the dialog.
+screen, the colour you are holding, or anything in the library — reached through a visual
+browser, not a dropdown of names, grouped by bookmark with each palette shown as its own
+swatch strip. "Latest palette" keeps following along — generate a new one on any page and
+the poster updates, because every palette screen publishes through the same `PaletteBoard`.
+Names are editable per band, and a picture can be dropped straight onto the preview instead
+of going through the dialog.
 
 Six **templates** ship as starting points (Spec sheet, City lights, Retro, Columns, Cards,
 Minimal). A template is a *look*: it never touches your colours, your picture, your title,
-the export format or the resolution. The one you chose is remembered between sessions.
+the export format, the resolution, or the picture's own pan and zoom. The one you chose is
+remembered between sessions.
+
+A whole poster — page, layout, type, background, everything — can be **saved to the
+library** under a name, then pulled back later from the Poster page's own "Saved
+configurations" list or from a "Poster configurations" section on the Library page (whose
+"Open" jumps to Poster with it loaded). Saving again offers to update the loaded
+configuration in place or file a new one, so iterating on a look does not pile up copies
+by accident. `Library.posters` in `library.json` holds them; the shape lives in
+`shared/types.ts` rather than the renderer-only poster types, since the main process's
+migration code has to know it too — v2 -> v3 of the library schema added it.
 
 Export writes PNG, JPEG or WebP: the renderer encodes the canvas and hands the bytes to
 the main process, which shows the save dialog and writes them.
@@ -288,12 +309,13 @@ Plain, pretty-printed JSON you can read, edit and version-control:
 | Windows | `%APPDATA%/color-finder/data/`                               |
 | Linux   | `~/.config/color-finder/data/`                               |
 
-`library.json` holds bookmarks and palettes, `settings.json` holds preferences (theme,
-preferred copy format, side nav state, pane sizes, tab selections). Writes go through a
-temp file and a rename, so an interrupted write cannot truncate the library. Both files
-carry a `schemaVersion`; `migrateLibrary` / `migrateSettings` in `storage.service.ts` are
-where shape changes get handled — settings are at v5, the last step adding the Poster
-split. Missing fields fall back to the defaults, so an older file upgrades on first read.
+`library.json` holds bookmarks, palettes, standalone colours and saved Poster
+configurations; `settings.json` holds preferences (theme, preferred copy format, side nav
+state, pane sizes, tab selections). Writes go through a temp file and a rename, so an
+interrupted write cannot truncate the library. Both files carry a `schemaVersion`;
+`migrateLibrary` / `migrateSettings` in `storage.service.ts` are where shape changes get
+handled — the library is at v3 (saved posters), settings at v5 (the Poster split). Missing
+fields fall back to the defaults, so an older file upgrades on first read.
 
 Exports (`Export library`, `Export palette`) are self-describing documents tagged with a
 `format` and `version`, and palette exports include each colour pre-rendered as RGB, HSL,

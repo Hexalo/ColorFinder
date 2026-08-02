@@ -57,18 +57,20 @@ async function readJson<T>(path: string): Promise<T | null> {
 }
 
 /**
- * Brings an older file up to the current shape. Today there is only one
- * version, but every future change gets a step here instead of silently
- * breaking somebody's saved palettes.
+ * Brings an older file up to the current shape. Every future change gets a
+ * step here instead of silently breaking somebody's saved palettes.
+ *
+ * v1 -> v2 added standalone saved colours. v2 -> v3 added saved Poster
+ * configurations.
  */
-/** v1 -> v2 added standalone saved colours. */
 function migrateLibrary(raw: Partial<Library> | null): Library {
   if (!raw) return createEmptyLibrary()
   return {
     schemaVersion: LIBRARY_SCHEMA_VERSION,
     bookmarks: Array.isArray(raw.bookmarks) ? raw.bookmarks : [],
     palettes: Array.isArray(raw.palettes) ? raw.palettes : [],
-    colors: Array.isArray(raw.colors) ? raw.colors : []
+    colors: Array.isArray(raw.colors) ? raw.colors : [],
+    posters: Array.isArray(raw.posters) ? raw.posters : []
   }
 }
 

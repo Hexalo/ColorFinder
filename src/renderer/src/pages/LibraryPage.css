@@ -195,3 +195,79 @@
   height: 31px;
   font-size: 12.5px;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Saved poster configurations                                                 */
+
+.poster-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.poster-card__preview {
+  display: flex;
+  height: 76px;
+}
+
+.poster-card__preview span {
+  flex: 1;
+  min-width: 0;
+}
+
+.poster-card__meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+}
+
+.poster-card__meta-text {
+  min-width: 0;
+}
+
+.poster-card__name {
+  font-size: 12.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.poster-card__sub {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+.poster-card__tools {
+  display: flex;
+  gap: 1px;
+  flex: none;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.poster-card:hover .poster-card__tools,
+.poster-card:focus-within .poster-card__tools {
+  opacity: 1;
+}
+
+.poster-card__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) var(--space-3);
+  margin-top: auto;
+}
+
+.poster-card__foot .select {
+  flex: 1;
+  min-width: 0;
+}
+
+.poster-card__foot .select select {
+  height: 31px;
+  font-size: 12.5px;
+}

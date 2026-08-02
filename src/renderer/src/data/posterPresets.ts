@@ -166,10 +166,13 @@ export const createDefaultPoster = (): PosterConfig => ({
 
   background: 'solid',
   backgroundColor: '#1c1a17',
+  backgroundDim: 0,
   image: null,
   imageFit: 'cover',
-  imageDim: 0.25,
   imageBlur: 0,
+  imageScale: 1,
+  imageOffsetX: 0,
+  imageOffsetY: 0,
 
   orientation: 'vertical',
   gap: 0,
@@ -205,9 +208,10 @@ export const createDefaultPoster = (): PosterConfig => ({
 
 /**
  * A template is a look, not a document: the picture, the title, the export
- * format and the resolution belong to the poster the user is working on and
- * must survive a change of template. The spec sheet is the defaults minus
- * exactly those, and the rest only carry what they actually care about.
+ * format, the resolution and the picture's own pan/zoom belong to the poster
+ * the user is working on and must survive a change of template. The spec
+ * sheet is the defaults minus exactly those, and the rest only carry what
+ * they actually care about.
  */
 const {
   image: _image,
@@ -216,6 +220,9 @@ const {
   format: _format,
   width: _width,
   height: _height,
+  imageScale: _imageScale,
+  imageOffsetX: _imageOffsetX,
+  imageOffsetY: _imageOffsetY,
   ...SPEC_SHEET
 } = createDefaultPoster()
 
@@ -235,7 +242,7 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     config: {
       ratio: '2:3',
       background: 'image',
-      imageDim: 0.2,
+      backgroundDim: 0.2,
       orientation: 'vertical',
       gap: 1.4,
       padding: 7,
