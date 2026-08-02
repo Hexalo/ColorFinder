@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npm -v)",
       "Bash(npm pack *)",
-      "Bash(tar -tzf hugeicons-react-0.4.0.tgz)"
+      "Bash(tar -tzf hugeicons-react-0.4.0.tgz)",
+      "Bash(npm run *)",
+      "Bash(echo \"started with pid $!\")"
     ]
   }
 }
