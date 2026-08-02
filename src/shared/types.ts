@@ -75,6 +75,8 @@ export interface TabState {
   harmony: string
   randomFlavour: string
   librarySection: string
+  /** Last template applied on the Poster page. */
+  posterTemplate: string
 }
 
 export interface Settings {
@@ -90,6 +92,8 @@ export interface Settings {
   copyPanelWidth: number
   /** Height of the recent-colours strip in the side nav, in px. Drag to resize. */
   recentHeight: number
+  /** Share of the Poster page given to the preview, 0–1. Drag to resize. */
+  posterSplit: number
   tabs: TabState
 }
 
@@ -111,16 +115,26 @@ export const RECENT_MIN_HEIGHT = 44
 export const RECENT_MAX_HEIGHT = 460
 export const RECENT_DEFAULT_HEIGHT = 128
 
+/**
+ * The Poster split is stored as a fraction rather than a pixel width: the two
+ * halves are a canvas and a settings column, and both want to keep their share
+ * of whatever window the user has.
+ */
+export const POSTER_SPLIT_MIN = 0.3
+export const POSTER_SPLIT_MAX = 0.78
+export const POSTER_SPLIT_DEFAULT = 0.6
+
 export const createDefaultTabs = (): TabState => ({
   pickerMode: 'wheel',
   pickerSpace: 'oklch',
   harmony: 'analogous',
   randomFlavour: 'any',
-  librarySection: 'palettes'
+  librarySection: 'palettes',
+  posterTemplate: 'spec-sheet'
 })
 
 export const LIBRARY_SCHEMA_VERSION = 2
-export const SETTINGS_SCHEMA_VERSION = 4
+export const SETTINGS_SCHEMA_VERSION = 5
 
 export const createEmptyLibrary = (): Library => ({
   schemaVersion: LIBRARY_SCHEMA_VERSION,
@@ -137,8 +151,12 @@ export const createDefaultSettings = (): Settings => ({
   sidebarWidth: SIDEBAR_DEFAULT_WIDTH,
   copyPanelWidth: COPY_PANEL_DEFAULT_WIDTH,
   recentHeight: RECENT_DEFAULT_HEIGHT,
+  posterSplit: POSTER_SPLIT_DEFAULT,
   tabs: createDefaultTabs()
 })
+
+/** Bitmap formats the poster exporter can write. */
+export type ImageFormat = 'png' | 'jpeg' | 'webp'
 
 /** Result of a screen colour pick. `null` hex means the user cancelled. */
 export interface ScreenPickResult {
@@ -170,6 +188,15 @@ export interface ColorFinderApi {
     importJson(): Promise<unknown | null>
     /** Shows an image open dialog and returns a `data:` URL. */
     openImage(): Promise<string | null>
+    /**
+     * Shows a save dialog and writes raw image bytes. Returns the path, or
+     * `null` if the user cancelled.
+     */
+    exportImage(
+      suggestedName: string,
+      bytes: Uint8Array,
+      format: ImageFormat
+    ): Promise<string | null>
   }
   system: {
     platform: NodeJS.Platform

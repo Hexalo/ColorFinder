@@ -25,7 +25,7 @@ src/
 │   └── services/
 │       ├── storage.service.ts        atomic JSON reads/writes + schema migration
 │       ├── screenPicker.service.ts   cross-OS eyedropper (capture + overlay windows)
-│       └── files.service.ts          save/open dialogs, image → data URL
+│       └── files.service.ts          save/open dialogs, image → data URL, poster writes
 ├── preload/                 the only bridge the renderer gets (contextIsolation on)
 ├── shared/                  types and IPC channel names used by every process
 └── renderer/
@@ -38,12 +38,14 @@ src/
         │   ├── color/       ColorWheel, ColorSquare, ChannelSliders, PaletteStrip…
         │   ├── copy/        CopyPanel — the one place colours get copied from
         │   ├── palette/     PaletteBoard, SavePaletteDialog, BookmarkDialog
+        │   ├── poster/      PosterCanvas (live preview), PosterSettings, PosterSwatches
         │   └── brand/       AppMark (shared by the sidebar, splash and app icon)
         ├── pages/           one file per side-nav entry
         ├── services/        pure logic — colour maths, harmonies, extraction, export
         ├── hooks/           reusable React behaviour (theme, clipboard, drag, sidebar…)
         ├── store/           Zustand stores; the only things that talk to `window.api`
-        ├── data/            static tables: colour spaces, code/palette formats, nav
+        ├── data/            static tables: colour spaces, code/palette formats, nav,
+        │                    poster ratios/fonts/templates and the poster glyph paths
         ├── types/           renderer-facing types, re-exporting the shared ones
         ├── assets/fonts/    self-hosted Quicksand + Playwrite GB S
         └── styles/          theme tokens, animations, global reset
@@ -148,6 +150,51 @@ colour's lightness and hue — `maxChromaAt`. That ceiling is nowhere near const
 OKLCH L 0.63 it runs from about 0.109 in the cyans to 0.287 in the magentas, so a single
 flat maximum would strand most hues a third of the way out and make the rim unreachable.
 
+## Posters
+
+**Poster** lays a colour or a palette out as an image you can export: bands of colour with
+their names and values, in the shape of a printed colour card. The page is two panes — the
+poster on the left, every control on the right — with a divider you can drag; the split is
+a fraction of the page rather than a pixel width, so both halves keep their share when the
+window changes size, and it is remembered in `settings.json`.
+
+**The preview *is* the exporter.** `drawPoster` renders onto any 2D context in poster
+pixels; the preview scales that context down to fit the pane and the export runs it at
+full resolution on an off-screen canvas. There is no second layout to keep in sync, so
+what you see cannot drift from what lands in the file.
+
+Every measurement in the config — type sizes, gaps, margins, corner radius, glyph size —
+is a **percentage of the poster's short edge**, never a pixel. The same poster at 900px
+and at 3600px is the same poster, which is the point of offering a resolution at all.
+
+What can be set: the ratio (portrait, square, landscape, A4, or free) and the resolution;
+stacked bands or side-by-side columns; gap, margin, corner radius, opacity and band width,
+with the narrow bands sitting flush, centred or in a **cascade**; the typeface, weight,
+sizes, tracking, alignment and position of the text; which values are printed (HEX, RGB,
+HSL, CMYK, OKLCH, index) and whether they sit in columns, stacked or inline; a solid,
+palette-gradient or **picture** background, dimmed and blurred to taste; and a glyph per
+band, chosen from a set drawn as plain path data so the same string feeds the canvas and
+the picker.
+
+Text colour has three modes, and the interesting one is **Palette**: instead of the usual
+black-or-white it borrows the most readable colour *from the palette itself*, which is
+what gives printed colour cards their coherence — the caption on the orange band is the
+palette's own brown, not a generic grey. It falls back to black or white when no palette
+colour clears about 3:1.
+
+Colours come from a single list rather than a mode switch: the palette you last had on
+screen, the colour you are holding, or anything in the library. "Latest palette" keeps
+following along — generate a new one on any page and the poster updates, because every
+palette screen publishes through the same `PaletteBoard`. Names are editable per band, and
+a picture can be dropped straight onto the preview instead of going through the dialog.
+
+Six **templates** ship as starting points (Spec sheet, City lights, Retro, Columns, Cards,
+Minimal). A template is a *look*: it never touches your colours, your picture, your title,
+the export format or the resolution. The one you chose is remembered between sessions.
+
+Export writes PNG, JPEG or WebP: the renderer encodes the canvas and hands the bytes to
+the main process, which shows the save dialog and writes them.
+
 ## Colour names
 
 Every colour gets a name. Colours close to one of the 148 CSS named colours borrow that
@@ -242,10 +289,11 @@ Plain, pretty-printed JSON you can read, edit and version-control:
 | Linux   | `~/.config/color-finder/data/`                               |
 
 `library.json` holds bookmarks and palettes, `settings.json` holds preferences (theme,
-preferred copy format, side nav state). Writes go through a temp file and a rename, so an
-interrupted write cannot truncate the library. Both files carry a `schemaVersion`;
-`migrateLibrary` / `migrateSettings` in `storage.service.ts` are where shape changes get
-handled — settings are already at v2, which added the side nav state.
+preferred copy format, side nav state, pane sizes, tab selections). Writes go through a
+temp file and a rename, so an interrupted write cannot truncate the library. Both files
+carry a `schemaVersion`; `migrateLibrary` / `migrateSettings` in `storage.service.ts` are
+where shape changes get handled — settings are at v5, the last step adding the Poster
+split. Missing fields fall back to the defaults, so an older file upgrades on first read.
 
 Exports (`Export library`, `Export palette`) are self-describing documents tagged with a
 `format` and `version`, and palette exports include each colour pre-rendered as RGB, HSL,
@@ -269,3 +317,17 @@ A few points in the brief were open-ended; these are the calls made:
   palette) and which format group you work in most, rather than showing one flat list.
 - The picker keeps its live per-space read-out. That is feedback while you drag, not a
   copy surface — copying moved entirely into the panel.
+- **The poster is drawn on a canvas**, not laid out in the DOM and screenshotted. It is the
+  only way the preview and the exported file can be the same thing, and it keeps the export
+  free of any dependency: no html-to-image, no headless browser.
+- **Poster glyphs are path data**, not `hugeicons-react` components. The canvas needs a
+  `Path2D`, and serialising React components to feed one would put a second source of truth
+  between the picker and the poster. Add to `data/posterIcons.ts` to extend the set.
+- **Poster typefaces** are a curated list of stacks. Quicksand and Playwrite ship with the
+  app; the rest are system faces with enough fallbacks that a poster still looks deliberate
+  on a machine that has none of them.
+- **The poster is not persisted** — it is a one-off export, and the templates are there to
+  get a look back in one click. Only the chosen template and the pane split are remembered.
+- **"Latest palette"** is whatever palette was last on screen, which includes one you
+  merely opened in the library. That is the reading that needs no bookkeeping: every
+  palette screen renders the same `PaletteBoard`, so it is the one that publishes.

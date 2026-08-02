@@ -22,6 +22,7 @@ export const IPC = {
   filesExportJson: 'files:export-json',
   filesImportJson: 'files:import-json',
   filesOpenImage: 'files:open-image',
+  filesExportImage: 'files:export-image',
 
   systemScreenCaptureBlocked: 'system:screen-capture-blocked',
   systemOpenScreenCaptureSettings: 'system:open-screen-capture-settings'

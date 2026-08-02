@@ -5,6 +5,11 @@ interface PageProps {
   title: string
   actions?: ReactNode
   children: ReactNode
+  /**
+   * Hands the whole remaining height to the children and stops the body from
+   * scrolling — for pages that manage their own panes, like the poster editor.
+   */
+  fill?: boolean
 }
 
 /**
@@ -13,14 +18,14 @@ interface PageProps {
  * There is deliberately no description slot — a paragraph next to the actions
  * reflows badly at every window width, and the pages explain themselves.
  */
-export function Page({ title, actions, children }: PageProps): React.JSX.Element {
+export function Page({ title, actions, children, fill = false }: PageProps): React.JSX.Element {
   return (
     <div className="page">
       <header className="page__head">
         <h1 className="page__title display">{title}</h1>
         {actions ? <div className="page__actions">{actions}</div> : null}
       </header>
-      <div className="page__body">{children}</div>
+      <div className={`page__body ${fill ? 'page__body--fill' : ''}`}>{children}</div>
     </div>
   )
 }

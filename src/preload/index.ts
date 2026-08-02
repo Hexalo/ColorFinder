@@ -21,7 +21,9 @@ const api: ColorFinderApi = {
     exportJson: (name, data) =>
       ipcRenderer.invoke(IPC.filesExportJson, name, data) as Promise<string | null>,
     importJson: () => ipcRenderer.invoke(IPC.filesImportJson) as Promise<unknown | null>,
-    openImage: () => ipcRenderer.invoke(IPC.filesOpenImage) as Promise<string | null>
+    openImage: () => ipcRenderer.invoke(IPC.filesOpenImage) as Promise<string | null>,
+    exportImage: (name, bytes, format) =>
+      ipcRenderer.invoke(IPC.filesExportImage, name, bytes, format) as Promise<string | null>
   },
   system: {
     platform: process.platform,

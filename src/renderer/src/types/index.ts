@@ -1,7 +1,25 @@
 export type {
+  PosterAlign,
+  PosterBackgroundMode,
+  PosterConfig,
+  PosterFieldDef,
+  PosterFieldId,
+  PosterImageFit,
+  PosterInfoLayout,
+  PosterOrientation,
+  PosterRatio,
+  PosterSwatch,
+  PosterTemplate,
+  PosterTextAlign,
+  PosterTextPosition,
+  PosterTextTone
+} from './poster'
+
+export type {
   Bookmark,
   ColorFinderApi,
   Hex,
+  ImageFormat,
   Library,
   Palette,
   PaletteSource,

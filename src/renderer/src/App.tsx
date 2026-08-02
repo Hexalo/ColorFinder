@@ -7,6 +7,7 @@ import { HarmoniesPage } from './pages/HarmoniesPage'
 import { ImagePage } from './pages/ImagePage'
 import { LibraryPage } from './pages/LibraryPage'
 import { PickerPage } from './pages/PickerPage'
+import { PosterPage } from './pages/PosterPage'
 import { RandomPage } from './pages/RandomPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { useLibraryStore } from './store/libraryStore'
@@ -20,6 +21,7 @@ const PAGES: Record<RouteId, () => React.JSX.Element> = {
   harmonies: HarmoniesPage,
   image: ImagePage,
   random: RandomPage,
+  poster: PosterPage,
   library: LibraryPage,
   settings: SettingsPage
 }

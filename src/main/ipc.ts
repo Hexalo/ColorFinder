@@ -1,7 +1,7 @@
 import { BrowserWindow, ipcMain } from 'electron'
 import { IPC } from '../shared/ipc'
-import type { Library, ScreenPickResult, Settings } from '../shared/types'
-import { exportJson, importJson, openImage } from './services/files.service'
+import type { ImageFormat, Library, ScreenPickResult, Settings } from '../shared/types'
+import { exportImage, exportJson, importJson, openImage } from './services/files.service'
 import {
   isScreenCaptureBlocked,
   openScreenCaptureSettings,
@@ -40,6 +40,11 @@ export function registerIpcHandlers(): void {
   )
   ipcMain.handle(IPC.filesImportJson, (event) => importJson(senderWindow(event)))
   ipcMain.handle(IPC.filesOpenImage, (event) => openImage(senderWindow(event)))
+  ipcMain.handle(
+    IPC.filesExportImage,
+    (event, name: string, bytes: Uint8Array, format: ImageFormat) =>
+      exportImage(senderWindow(event), name, bytes, format)
+  )
 
   ipcMain.handle(IPC.systemScreenCaptureBlocked, () => isScreenCaptureBlocked())
   ipcMain.handle(IPC.systemOpenScreenCaptureSettings, () => openScreenCaptureSettings())

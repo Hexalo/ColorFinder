@@ -7,6 +7,8 @@ import {
   COPY_PANEL_MAX_WIDTH,
   COPY_PANEL_MIN_WIDTH,
   LIBRARY_SCHEMA_VERSION,
+  POSTER_SPLIT_MAX,
+  POSTER_SPLIT_MIN,
   RECENT_MAX_HEIGHT,
   RECENT_MIN_HEIGHT,
   SETTINGS_SCHEMA_VERSION,
@@ -72,9 +74,9 @@ function migrateLibrary(raw: Partial<Library> | null): Library {
 
 /**
  * v1 -> v2 added the side nav state, v2 -> v3 the copy panel width and the
- * remembered tab selections, v3 -> v4 the height of the recent strip. Missing
- * fields fall back to the defaults, so an older settings.json upgrades in
- * place on first read.
+ * remembered tab selections, v3 -> v4 the height of the recent strip, v4 -> v5
+ * the Poster page split. Missing fields fall back to the defaults, so an older
+ * settings.json upgrades in place on first read.
  */
 function migrateSettings(raw: Partial<Settings> | null): Settings {
   const defaults = createDefaultSettings()
@@ -95,12 +97,21 @@ function migrateSettings(raw: Partial<Settings> | null): Settings {
       RECENT_MIN_HEIGHT,
       RECENT_MAX_HEIGHT
     ),
+    posterSplit: clampFraction(
+      raw.posterSplit ?? defaults.posterSplit,
+      POSTER_SPLIT_MIN,
+      POSTER_SPLIT_MAX
+    ),
     tabs: { ...defaults.tabs, ...(raw.tabs ?? {}) }
   }
 }
 
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(Math.max(Math.round(value), min), max)
+
+/** Same idea, minus the rounding — this one guards a 0–1 ratio. */
+const clampFraction = (value: number, min: number, max: number): number =>
+  Number.isFinite(value) ? Math.min(Math.max(value, min), max) : min
 
 export async function readLibrary(): Promise<Library> {
   return migrateLibrary(await readJson<Library>(libraryPath()))

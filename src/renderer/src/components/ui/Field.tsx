@@ -102,6 +102,34 @@ export function Segmented<T extends string>({
   )
 }
 
+interface ToggleProps {
+  label: string
+  checked: boolean
+  onChange(checked: boolean): void
+  hint?: string
+}
+
+/** Checkbox drawn as a switch, for the many on/off choices a poster has. */
+export function Toggle({ label, checked, onChange, hint }: ToggleProps): React.JSX.Element {
+  return (
+    <label className="toggle">
+      <input
+        type="checkbox"
+        className="toggle__input"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      <span className="toggle__track" aria-hidden="true">
+        <span className="toggle__thumb" />
+      </span>
+      <span className="toggle__text">
+        {label}
+        {hint ? <span className="toggle__hint">{hint}</span> : null}
+      </span>
+    </label>
+  )
+}
+
 interface RangeProps {
   label: string
   value: number

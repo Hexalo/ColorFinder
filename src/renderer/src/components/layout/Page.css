@@ -45,6 +45,14 @@
   padding: var(--space-2) var(--space-6) var(--space-7);
 }
 
+/* Panes take the height instead of the page scrolling. */
+.page__body--fill {
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+  padding-bottom: var(--space-5);
+}
+
 /*
  * One rhythm for everything stacked in a page, whatever it is. Keying the gap
  * off `.section + .section` only worked when two sections were adjacent — a

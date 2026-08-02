@@ -1,0 +1,78 @@
+.poster {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.poster__format {
+  width: 96px;
+}
+
+/* -------------------------------------------------------------------------- */
+
+.poster__preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: 0;
+  /* `flex-basis` carries the split; growing is off so the divider is honoured. */
+  flex-grow: 0;
+  flex-shrink: 1;
+}
+
+.poster__preview.is-over .poster-canvas {
+  border-color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
+.poster__meta {
+  flex: none;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+/* -------------------------------------------------------------------------- */
+
+.poster__divider {
+  flex: none;
+  position: relative;
+  width: var(--space-4);
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+.poster__grip {
+  width: 3px;
+  height: 46px;
+  border-radius: 999px;
+  background: var(--border);
+  transition:
+    background var(--transition),
+    height var(--transition);
+}
+
+.poster__divider:hover .poster__grip,
+.poster.is-resizing .poster__grip {
+  background: var(--accent);
+  height: 76px;
+}
+
+/* -------------------------------------------------------------------------- */
+
+.poster__panel {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+}
+
+/* Nothing should feel draggable while a pane is being resized. */
+.poster.is-resizing {
+  user-select: none;
+}

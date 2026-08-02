@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Add01Icon,
@@ -14,6 +14,7 @@ import { looseDocument, paletteFileName } from '../../services/export.service'
 import { rotateHue } from '../../services/color.service'
 import { randomHex } from '../../services/random.service'
 import { openCopyPanel } from '../../store/copyPanelStore'
+import { publishPalette } from '../../store/generatedStore'
 import { toast } from '../../store/toastStore'
 import type { PaletteSource } from '../../types'
 import { SavePaletteDialog } from './SavePaletteDialog'
@@ -79,6 +80,16 @@ export function PaletteBoard({
   hint
 }: PaletteBoardProps): React.JSX.Element {
   const [saving, setSaving] = useState(false)
+
+  /**
+   * Whatever palette is on screen is also "the latest palette" the Poster page
+   * offers as a source. Keyed on the joined colours so a re-render with the
+   * same swatches does not republish.
+   */
+  const key = colors.join(',')
+  useEffect(() => {
+    publishPalette(key ? key.split(',') : [], name, source)
+  }, [key, name, source])
 
   const setAt = (index: number, hex: string): void =>
     onChange(colors.map((item, i) => (i === index ? hex : item)))

@@ -1,4 +1,5 @@
 import {
+  ArtboardIcon,
   ColorPickerIcon,
   ColorsIcon,
   Image02Icon,
@@ -13,7 +14,14 @@ import type { ComponentType } from 'react'
  * variant asked for in the brief is behind their paid plan, so we stay on the
  * free one and keep the rounded family the brief wanted.
  */
-export type RouteId = 'picker' | 'harmonies' | 'image' | 'random' | 'library' | 'settings'
+export type RouteId =
+  | 'picker'
+  | 'harmonies'
+  | 'image'
+  | 'random'
+  | 'poster'
+  | 'library'
+  | 'settings'
 
 export interface NavItem {
   id: RouteId
@@ -46,6 +54,12 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Random',
     hint: 'Generate colours and palettes',
     icon: ShuffleIcon
+  },
+  {
+    id: 'poster',
+    label: 'Poster',
+    hint: 'Lay a colour or a palette out as an image',
+    icon: ArtboardIcon
   },
   {
     id: 'library',
