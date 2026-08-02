@@ -1,8 +1,9 @@
-import { app, BrowserWindow, nativeImage, shell } from 'electron'
+import { app, BrowserWindow, nativeImage, nativeTheme, shell } from 'electron'
 import { join } from 'node:path'
 import { IPC } from '../shared/ipc'
 import { registerIpcHandlers } from './ipc'
 import { disposeScreenPicker } from './services/screenPicker.service'
+import { readSettings } from './services/storage.service'
 
 const isDev = !app.isPackaged
 const isMac = process.platform === 'darwin'
@@ -21,10 +22,14 @@ const rendererEntry = (page: string): { url?: string; file?: string } => {
   return { file: join(__dirname, `../renderer/${page}`) }
 }
 
-const load = (window: BrowserWindow, page: string): void => {
+const load = (window: BrowserWindow, page: string, query?: Record<string, string>): void => {
   const entry = rendererEntry(page)
-  if (entry.url) void window.loadURL(entry.url)
-  else void window.loadFile(entry.file!)
+  if (entry.url) {
+    const search = query ? `?${new URLSearchParams(query).toString()}` : ''
+    void window.loadURL(`${entry.url}${search}`)
+  } else {
+    void window.loadFile(entry.file!, { query })
+  }
 }
 
 /** Used for the taskbar/dock icon in development; packaging uses build/icon.png. */
@@ -34,7 +39,18 @@ const appIcon = (): Electron.NativeImage | undefined => {
   return image.isEmpty() ? undefined : image
 }
 
-function createSplashWindow(): void {
+/**
+ * Mirrors the renderer's `useTheme` resolution (settings.theme, falling back
+ * to the OS preference for `system`) so the splash never has to wait on IPC
+ * to know whether it should be light or dark.
+ */
+async function resolveTheme(): Promise<'light' | 'dark'> {
+  const { theme } = await readSettings()
+  if (theme === 'system') return nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
+  return theme
+}
+
+function createSplashWindow(theme: 'light' | 'dark'): void {
   splashWindow = new BrowserWindow({
     width: 340,
     height: 300,
@@ -61,7 +77,7 @@ function createSplashWindow(): void {
     splashWindow = null
   })
 
-  load(splashWindow, 'splash.html')
+  load(splashWindow, 'splash.html', { theme })
 }
 
 function dismissSplash(): void {
@@ -132,9 +148,9 @@ if (!app.requestSingleInstanceLock()) {
     mainWindow.focus()
   })
 
-  void app.whenReady().then(() => {
+  void app.whenReady().then(async () => {
     registerIpcHandlers()
-    createSplashWindow()
+    createSplashWindow(await resolveTheme())
     createMainWindow()
 
     app.on('activate', () => {

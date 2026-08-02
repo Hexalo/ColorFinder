@@ -9,6 +9,12 @@ import { COLOR_PICKER_PATHS, RAINBOW_STOPS } from '../components/brand/AppMark'
  * main process fades it out (see `splash:leave`) and then destroys it.
  */
 
+// The main process resolves `settings.theme` (and the OS preference for
+// `system`) before this window is ever shown, so the splash paints in the
+// right theme on the first frame instead of flashing light-then-dark.
+const theme = new URLSearchParams(location.search).get('theme')
+document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light'
+
 const gradientStops = RAINBOW_STOPS.map(
   (stop, index) =>
     `<stop offset="${(index / (RAINBOW_STOPS.length - 1)) * 100}%" stop-color="${stop}"/>`
