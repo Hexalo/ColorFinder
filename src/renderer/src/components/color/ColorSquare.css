@@ -1,0 +1,76 @@
+.square {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.square__area {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: crosshair;
+  touch-action: none;
+  box-shadow: var(--shadow);
+}
+
+.square__white,
+.square__black {
+  position: absolute;
+  inset: 0;
+}
+
+.square__white {
+  background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0));
+}
+
+.square__black {
+  background: linear-gradient(to top, #000, rgba(0, 0, 0, 0));
+}
+
+.square__handle {
+  position: absolute;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 2.5px solid #fff;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  box-shadow:
+    0 0 0 1.5px rgba(0, 0, 0, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.square__hue {
+  position: relative;
+  height: 18px;
+  border-radius: 999px;
+  cursor: ew-resize;
+  touch-action: none;
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    to right,
+    hsl(0 100% 50%),
+    hsl(60 100% 50%),
+    hsl(120 100% 50%),
+    hsl(180 100% 50%),
+    hsl(240 100% 50%),
+    hsl(300 100% 50%),
+    hsl(360 100% 50%)
+  );
+  box-shadow: var(--shadow-sm);
+}
+
+.square__hue-handle {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2.5px solid #fff;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  box-shadow:
+    0 0 0 1.5px rgba(0, 0, 0, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+}

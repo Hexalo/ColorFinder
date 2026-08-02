@@ -1,0 +1,111 @@
+/*
+ * Warm neutral palette. Light is a paper-like off-white, dark is a soft
+ * charcoal with a hint of brown — cosy rather than clinical blue-grey.
+ */
+
+:root {
+  --radius-sm: 7px;
+  --radius: 11px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 22px;
+  --space-6: 30px;
+  --space-7: 44px;
+
+  --sidebar-width: 232px;
+  --sidebar-collapsed: 76px;
+  --copy-panel-width: 380px;
+
+  /*
+   * Height of the strip the window controls live in. macOS draws its traffic
+   * lights inside the sidebar, so the brand has to start below them; every
+   * other platform keeps a native frame and needs none of this.
+   */
+  --titlebar-height: 0px;
+
+  --font-sans: 'Quicksand', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, sans-serif;
+  --font-display: 'Playwrite GB S', 'Quicksand', cursive;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.32, 0.64, 1);
+  --transition: 160ms var(--ease);
+  --transition-slow: 280ms var(--ease);
+}
+
+:root[data-platform='darwin'] {
+  --titlebar-height: 34px;
+}
+
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f4f0ea;
+  --bg-elevated: #fbf8f4;
+  --surface: #fffdfa;
+  --surface-hover: #f6f1ea;
+  --surface-sunken: #ece5db;
+
+  --border: #e2d9cd;
+  --border-strong: #cfc3b3;
+
+  --text: #2a2521;
+  --text-muted: #7c7166;
+  --text-faint: #a1968a;
+
+  --accent: #b06a45;
+  --accent-hover: #9a5a38;
+  --accent-soft: #f2e3d8;
+  --accent-contrast: #ffffff;
+
+  --danger: #b04a3f;
+  --danger-soft: #f6e0dc;
+
+  --shadow-sm: 0 1px 2px rgba(60, 45, 30, 0.06);
+  --shadow: 0 4px 14px rgba(60, 45, 30, 0.08);
+  --shadow-lg: 0 16px 40px rgba(50, 38, 25, 0.14);
+  --shadow-panel: -14px 0 44px rgba(50, 38, 25, 0.13);
+
+  --scrim: rgba(30, 22, 14, 0.34);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Warm charcoal rather than near-black: easier on the eyes for long stints,
+     and it gives the swatches something to sit against. */
+  --bg: #23201b;
+  --bg-elevated: #2b2721;
+  --surface: #343029;
+  --surface-hover: #3e3931;
+  --surface-sunken: #232019;
+
+  --border: #453f36;
+  --border-strong: #5c5348;
+
+  --text: #f0eae1;
+  --text-muted: #b0a496;
+  --text-faint: #857a6d;
+
+  --accent: #dd9a70;
+  --accent-hover: #ecad84;
+  --accent-soft: #46342a;
+  --accent-contrast: #24190f;
+
+  --danger: #de8375;
+  --danger-soft: #472a25;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.34);
+  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.44);
+  --shadow-panel: -14px 0 44px rgba(0, 0, 0, 0.4);
+
+  --scrim: rgba(0, 0, 0, 0.45);
+}

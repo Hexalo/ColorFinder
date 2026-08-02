@@ -1,0 +1,24 @@
+appId: com.hexalo.colorfinder
+productName: Color Finder
+directories:
+  buildResources: build
+  output: release/${version}
+files:
+  - out/**
+  - package.json
+asarUnpack:
+  - resources/**
+mac:
+  target:
+    - dmg
+  category: public.app-category.graphics-design
+  # Required so the screen colour picker can read the screen contents.
+  extendInfo:
+    NSScreenCaptureUsageDescription: Color Finder needs to read your screen to pick colours from it.
+win:
+  target:
+    - nsis
+linux:
+  target:
+    - AppImage
+  category: Graphics

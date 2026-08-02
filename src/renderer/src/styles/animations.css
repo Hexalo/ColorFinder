@@ -1,0 +1,96 @@
+/*
+ * Shared motion. Everything here is a transform/opacity animation so it stays
+ * on the compositor, and everything collapses to nothing under
+ * `prefers-reduced-motion` (see the block at the bottom).
+ */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.995);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes stagger-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+/* Applied to the page outlet, keyed by route, so each page animates in. */
+.anim-page {
+  animation: page-in 260ms var(--ease) both;
+}
+
+.anim-fade {
+  animation: fade-in 200ms var(--ease) both;
+}
+
+.anim-rise {
+  animation: rise-in 260ms var(--ease) both;
+}
+
+.anim-pop {
+  animation: pop-in 240ms var(--ease-spring) both;
+}
+
+/*
+ * Disclosure rows. `grid-template-rows: 0fr -> 1fr` animates to the content's
+ * natural height without measuring it in JavaScript.
+ */
+.disclosure__content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--transition-slow);
+}
+
+.disclosure__content.is-open {
+  grid-template-rows: 1fr;
+}
+
+.disclosure__inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,78 @@
+.image__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (max-width: 980px) {
+  .image__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.image__drop {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  padding: var(--space-4);
+  overflow: hidden;
+  transition:
+    border-color var(--transition),
+    background var(--transition);
+}
+
+.image__drop.is-over {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.image__drop img {
+  max-width: 100%;
+  max-height: 380px;
+  border-radius: var(--radius);
+  display: block;
+  box-shadow: var(--shadow);
+}
+
+.image__drop .empty {
+  border: none;
+}
+
+.image__drop-actions {
+  position: absolute;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.image__side .section + .section {
+  margin-top: var(--space-4);
+}
+
+/* Sections inside the grid are laid out by the grid, not the page rhythm. */
+.image__layout > * {
+  margin-top: 0;
+}
+
+.image__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.image__note {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.image__busy {
+  display: grid;
+  place-items: center;
+  height: 200px;
+  color: var(--text-muted);
+  font-size: 13px;
+}

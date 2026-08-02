@@ -1,0 +1,71 @@
+.harmony__base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.harmony__base-label {
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.harmony__base-chip {
+  width: 31px;
+  height: 31px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--transition),
+    background var(--transition);
+}
+
+.harmony__base-chip:hover {
+  transform: translateY(-1px) scale(1.05);
+}
+
+.harmony__base-edit {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 31px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 12.5px;
+  font-weight: 550;
+  cursor: pointer;
+}
+
+.harmony__base-edit:hover {
+  background: var(--surface-hover);
+}
+
+.harmony__base-edit input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.harmony__wheel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-5);
+}
+
+.harmony__description {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  margin-left: var(--space-2);
+}

@@ -1,0 +1,207 @@
+/*
+ * Allowed to shrink, and its inner grid is what gives way. Without
+ * `min-height: 0` a flex item refuses to go below its content height, so a
+ * long history pushed the nav items and the footer off the bottom instead of
+ * scrolling inside the strip.
+ */
+.nav-colors {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-top: 1px solid var(--border);
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
+.nav-colors.is-collapsed {
+  padding: var(--space-2);
+  align-items: center;
+}
+
+.nav-colors__current {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 54px;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  overflow: hidden;
+  transition:
+    background var(--transition),
+    height var(--transition-slow),
+    transform var(--transition);
+}
+
+.nav-colors__current:hover {
+  transform: translateY(-1px);
+}
+
+.nav-colors.is-collapsed .nav-colors__current {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+}
+
+.nav-colors__current-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  opacity: 1;
+  transition: opacity 110ms var(--ease);
+}
+
+.nav-colors.is-collapsed .nav-colors__current-text {
+  opacity: 0;
+}
+
+.nav-colors__current-name {
+  font-size: 11.5px;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-colors__current-hex {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  opacity: 0.72;
+}
+
+.nav-colors__current,
+.nav-colors__head {
+  flex: none;
+}
+
+.nav-colors__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.nav-colors__clear {
+  font: inherit;
+  color: var(--text-faint);
+  transition: color var(--transition);
+}
+
+.nav-colors__clear:hover {
+  color: var(--danger);
+}
+
+/* The grabber on the strip's top edge. Sized for the pointer, drawn thin. */
+.nav-colors__grip {
+  position: relative;
+  height: 9px;
+  margin: -2px 0 -3px;
+  flex: none;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.nav-colors__grip::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--border-strong);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.nav-colors:hover .nav-colors__grip::after,
+.nav-colors__grip:focus-visible::after,
+.nav-colors.is-resizing .nav-colors__grip::after {
+  opacity: 1;
+}
+
+.nav-colors__grip:hover::after,
+.nav-colors.is-resizing .nav-colors__grip::after {
+  background: var(--accent);
+}
+
+/*
+ * Grows with the history, then scrolls — nothing is dropped from the strip.
+ * The ceiling is whatever the user dragged the grip to, and it gives way
+ * further whenever the sidebar runs out of room, so the nav items and the
+ * footer always stay reachable.
+ */
+.nav-colors__recent {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Room for the remove crosses, which sit outside the chips. */
+  padding: 5px 5px 2px;
+  margin: -5px -5px -2px;
+  overscroll-behavior: contain;
+}
+
+.nav-colors__slot {
+  position: relative;
+  display: block;
+}
+
+.nav-colors__chip {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition);
+}
+
+.nav-colors__slot:hover .nav-colors__chip {
+  transform: scale(1.14);
+  box-shadow: var(--shadow-sm);
+}
+
+.nav-colors__remove {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transform: scale(0.7);
+  transition:
+    opacity var(--transition),
+    transform var(--transition),
+    color var(--transition);
+}
+
+.nav-colors__slot:hover .nav-colors__remove,
+.nav-colors__remove:focus-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.nav-colors__remove:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}

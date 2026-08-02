@@ -1,0 +1,48 @@
+.random__single {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) minmax(240px, 1fr);
+  overflow: hidden;
+}
+
+@media (max-width: 820px) {
+  .random__single {
+    grid-template-columns: 1fr;
+  }
+}
+
+.random__swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  min-height: 150px;
+  padding: var(--space-4);
+  text-align: left;
+  transition: background var(--transition);
+}
+
+.random__swatch-hex {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.random__swatch-name {
+  font-size: 12.5px;
+  font-weight: 550;
+  opacity: 0.68;
+}
+
+.random__single-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+/* Sits in the section header, opposite the title — room to breathe. */
+.random__size {
+  width: 210px;
+}

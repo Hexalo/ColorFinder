@@ -1,0 +1,130 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+}
+
+.page__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  /* Clears the macOS window controls, then the page's own breathing room. */
+  padding: calc(var(--titlebar-height) + var(--space-4)) var(--space-6) var(--space-4);
+  -webkit-app-region: drag;
+}
+
+.page__head button,
+.page__head input,
+.page__head a,
+.page__head select {
+  -webkit-app-region: no-drag;
+}
+
+/* Playwrite is a handwriting face: it needs air and no negative tracking. */
+.page__title {
+  font-size: 23px;
+  line-height: 1.35;
+  font-weight: 400;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.page__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+}
+
+.page__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-2) var(--space-6) var(--space-7);
+}
+
+/*
+ * One rhythm for everything stacked in a page, whatever it is. Keying the gap
+ * off `.section + .section` only worked when two sections were adjacent — a
+ * section following a plain div (a palette board, a toolbar) got nothing, and
+ * its title ended up jammed against the block above.
+ */
+.page__body > * + * {
+  margin-top: var(--space-6);
+}
+
+/* -------------------------------------------------------------------------- */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.section__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  /* The uppercase label sits high in its line box; this evens it out. */
+  padding-bottom: 2px;
+}
+
+.section__title {
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.section__hint {
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--text-faint);
+}
+
+.section__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+}
+
+/* Reusable card surface. */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* -------------------------------------------------------------------------- */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-7) var(--space-5);
+  text-align: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  color: var(--text-muted);
+}
+
+.empty__icon {
+  color: var(--text-faint);
+}
+
+.empty__title {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.empty__description {
+  font-size: 13px;
+  max-width: 44ch;
+}

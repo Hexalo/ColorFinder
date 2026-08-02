@@ -1,0 +1,10 @@
+.popover {
+  position: fixed;
+  z-index: 120;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  animation: pop-in 180ms var(--ease-spring) both;
+}

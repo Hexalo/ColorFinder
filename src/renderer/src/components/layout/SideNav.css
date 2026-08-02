@@ -1,0 +1,229 @@
+.sidenav {
+  position: relative;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elevated);
+  border-right: 1px solid var(--border);
+  transition: width var(--transition-slow);
+  overflow: hidden;
+}
+
+/* No easing while the pointer is driving the width — it has to track 1:1. */
+.sidenav.is-resizing {
+  transition: none;
+}
+
+.sidenav.is-collapsed {
+  width: var(--sidebar-collapsed);
+}
+
+/*
+ * Reserved strip for the macOS traffic lights. Zero-height elsewhere, so the
+ * brand sits at the top on Windows and Linux where the frame is native.
+ */
+.sidenav__titlebar {
+  height: var(--titlebar-height);
+  flex: none;
+  -webkit-app-region: drag;
+}
+
+.sidenav__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  /* The strip above is the drag handle; this is a real button. */
+  -webkit-app-region: no-drag;
+  user-select: none;
+  overflow: hidden;
+  text-align: left;
+  color: inherit;
+}
+
+.sidenav__brand:hover .app-mark {
+  transform: scale(1.07) rotate(-4deg);
+}
+
+.sidenav__brand:hover .sidenav__name {
+  color: var(--accent);
+}
+
+.sidenav__brand .app-mark {
+  transition: transform var(--transition);
+}
+
+.sidenav.is-collapsed .sidenav__brand {
+  justify-content: center;
+  gap: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/*
+ * Collapsing text. Fading a label out is not enough — it keeps its width, so
+ * `justify-content: center` would still centre "icon + invisible label" and
+ * push the icon off-centre into the clipped edge. Squeezing `max-width` to 0
+ * (and the flex gap with it) actually removes the space, and animates.
+ */
+.sidenav__name,
+.sidenav__label {
+  max-width: 240px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 1;
+  transition:
+    max-width var(--transition-slow),
+    opacity 110ms var(--ease);
+}
+
+.sidenav__name {
+  font-size: 17px;
+  /* Playwrite tops out at weight 400, so the extra heft comes from a hairline
+     stroke rather than a heavier cut. */
+  font-weight: 400;
+  -webkit-text-stroke: 0.35px currentColor;
+  transition:
+    max-width var(--transition-slow),
+    opacity 110ms var(--ease),
+    color var(--transition);
+}
+
+.sidenav.is-collapsed .sidenav__name,
+.sidenav.is-collapsed .sidenav__label {
+  max-width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*
+ * Never gives way and never scrolls: the pages are the point of the app, and a
+ * long colour history is not a reason to hide "Settings" behind a scrollbar.
+ * The recent strip below is what shrinks when the sidebar runs short, so it
+ * simply stops growing where these items end. The window's own `minHeight`
+ * (640px) leaves room for the list, the current colour and the footer with
+ * plenty to spare.
+ */
+.sidenav__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  overflow: visible;
+  flex: none;
+}
+
+/* Pushes the colours to the foot while the strip is short. */
+.sidenav__spacer {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sidenav__list li {
+  animation: stagger-up 320ms var(--ease) both;
+  animation-delay: calc(var(--i) * 34ms + 90ms);
+}
+
+.sidenav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  height: 38px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius);
+  font-size: 13.5px;
+  font-weight: 550;
+  color: var(--text-muted);
+  text-align: left;
+  white-space: nowrap;
+  transition:
+    background var(--transition),
+    color var(--transition),
+    gap var(--transition-slow),
+    padding var(--transition-slow);
+}
+
+.sidenav.is-collapsed .sidenav__item {
+  padding: 0;
+  gap: 0;
+  justify-content: center;
+}
+
+.sidenav__icon {
+  display: inline-flex;
+  flex: none;
+  transition: transform var(--transition);
+}
+
+.sidenav__item:hover .sidenav__icon {
+  transform: scale(1.1);
+}
+
+.sidenav__label {
+  transition:
+    opacity var(--transition),
+    transform var(--transition);
+}
+
+.sidenav__item:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.sidenav__item.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 650;
+}
+
+.sidenav__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.sidenav.is-collapsed .sidenav__foot {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidenav__foot .is-flipped {
+  transform: scaleX(-1);
+}
+
+/* -------------------------------------------------------------------------- */
+
+.sidenav__resizer {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 7px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 5;
+  -webkit-app-region: no-drag;
+}
+
+.sidenav__resizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 3px;
+  width: 2px;
+  height: 100%;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.sidenav__resizer:hover::after,
+.sidenav.is-resizing .sidenav__resizer::after {
+  opacity: 0.7;
+}

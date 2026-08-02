@@ -1,0 +1,48 @@
+.save-colour__hero {
+  display: flex;
+  align-items: flex-end;
+  height: 72px;
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.save-colour__bookmarks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  max-height: 132px;
+  overflow-y: auto;
+}
+
+.save-colour__bookmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 31px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--text-muted);
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    color var(--transition);
+}
+
+.save-colour__bookmark:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.save-colour__bookmark.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}

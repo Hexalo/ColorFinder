@@ -1,0 +1,38 @@
+.hex-field {
+  min-width: 0;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  letter-spacing: 0.03em;
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition);
+}
+
+.hex-field--md {
+  height: 38px;
+  padding: 0 var(--space-3);
+  font-size: 14px;
+}
+
+.hex-field--sm {
+  height: 31px;
+  padding: 0 var(--space-2);
+  font-size: 12.5px;
+  border-radius: var(--radius-sm);
+  width: 106px;
+}
+
+.hex-field::placeholder {
+  color: var(--text-faint);
+}
+
+.hex-field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.hex-field.is-invalid {
+  border-color: var(--danger);
+}

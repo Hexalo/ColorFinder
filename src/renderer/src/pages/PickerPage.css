@@ -1,0 +1,124 @@
+.picker__grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(300px, 0.85fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (max-width: 1080px) {
+  .picker__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.picker__grid .section + .section {
+  margin-top: 0;
+}
+
+.picker__stage {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-5);
+  min-height: 300px;
+}
+
+.picker__sliders {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.picker__spaces {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) var(--space-3);
+}
+
+.picker__space {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 6px var(--space-2);
+}
+
+.picker__space + .picker__space {
+  border-top: 1px solid var(--border);
+}
+
+.picker__space-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  flex: none;
+}
+
+.picker__space-value {
+  font-size: 12.5px;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picker__recent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.picker__recent-slot {
+  position: relative;
+  display: inline-flex;
+  /* Room for the remove button to sit proud of the chip. */
+  padding-top: 5px;
+  padding-right: 5px;
+}
+
+.picker__recent-chip {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition);
+}
+
+.picker__recent-slot:hover .picker__recent-chip {
+  transform: translateY(-2px);
+}
+
+.picker__recent-remove {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transform: scale(0.7);
+  transition:
+    opacity var(--transition),
+    transform var(--transition),
+    color var(--transition);
+}
+
+.picker__recent-slot:hover .picker__recent-remove,
+.picker__recent-remove:focus-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.picker__recent-remove:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}

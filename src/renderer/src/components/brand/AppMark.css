@@ -1,0 +1,25 @@
+.app-mark {
+  display: inline-flex;
+  flex: none;
+  border-radius: 27%;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.app-mark svg {
+  display: block;
+}
+
+/* Slow spectrum drift, used on the splash. */
+.app-mark.is-animated svg {
+  animation: app-mark-drift 7s linear infinite;
+}
+
+@keyframes app-mark-drift {
+  from {
+    filter: hue-rotate(0deg);
+  }
+  to {
+    filter: hue-rotate(360deg);
+  }
+}

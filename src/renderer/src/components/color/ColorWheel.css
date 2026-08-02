@@ -1,0 +1,57 @@
+.wheel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.wheel__disc {
+  position: relative;
+  width: var(--wheel-size);
+  height: var(--wheel-size);
+  flex: none;
+  border-radius: 50%;
+  cursor: crosshair;
+  touch-action: none;
+  box-shadow: var(--shadow);
+}
+
+.wheel__disc canvas {
+  display: block;
+  border-radius: 50%;
+}
+
+.wheel__handle,
+.wheel__value-handle {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  background: transparent;
+  border: 2.5px solid #fff;
+  box-shadow:
+    0 0 0 1.5px rgba(0, 0, 0, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.wheel__handle {
+  width: 17px;
+  height: 17px;
+  transform: translate(-50%, -50%);
+}
+
+.wheel__value {
+  position: relative;
+  width: 22px;
+  flex: none;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  cursor: ns-resize;
+  touch-action: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.wheel__value-handle {
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+}
